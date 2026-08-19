@@ -769,6 +769,7 @@ function catchGift(i){
 
   const el=document.querySelector(`.flying-gift[data-idx="${i}"]`);
   el.classList.add('caught');
+  el.style.animationPlayState='paused';
 
   /* sparkle burst on catch */
   const rect=el.getBoundingClientRect();
@@ -785,6 +786,8 @@ function catchGift(i){
     document.body.appendChild(s);
     setTimeout(()=>s.remove(),600);
   }
+
+  setTimeout(()=>{el.style.display='none'},500);
 
   const counter=document.getElementById('catchCounter');
   counter.textContent=caughtGifts.size+' / 3 caught';
