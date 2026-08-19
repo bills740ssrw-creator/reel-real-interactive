@@ -149,6 +149,22 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
 @keyframes heartPulse{0%{font-size:20px}50%{font-size:28px}100%{font-size:20px}}
 #needleLine{transition:all .12s cubic-bezier(.22,1,.36,1)}
 
+/* Infinity mode */
+.infinity-mode .meter-glow-bg{opacity:1!important;animation:infinityGlow .8s ease infinite}
+@keyframes infinityGlow{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.3)}}
+.infinity-mode #infinityArc{opacity:.8;transition:stroke-dashoffset 2s cubic-bezier(.22,1,.36,1)}
+.infinity-mode #infinityGlow{opacity:.4;transition:stroke-dashoffset 2.5s cubic-bezier(.22,1,.36,1)}
+.infinity-mode #needleGroup{transition:none;animation:needleSpin 1.5s cubic-bezier(.22,1,.36,1)}
+@keyframes needleSpin{0%{transform:rotate(90deg)}100%{transform:rotate(1170deg)}}
+.infinity-mode .pct{animation:infinityPulse .6s ease infinite;color:#a9164a;text-shadow:0 0 30px #a9164a55}
+@keyframes infinityPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.infinity-mode #gaugeFill{stroke:#a9164a;transition:stroke .5s}
+.infinity-mode #gaugeGlow{opacity:.7}
+
+.infinity-text{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:Pacifico;font-size:clamp(14px,2.5vw,20px);color:#a9164a;opacity:0;transition:all .6s;white-space:nowrap;pointer-events:none;z-index:5;text-shadow:0 0 20px #a9164a33}
+.infinity-text.show{opacity:1;animation:infinityTextIn .8s cubic-bezier(.22,1,.36,1)}
+@keyframes infinityTextIn{0%{opacity:0;transform:translate(-50%,-50%) scale(0)}60%{transform:translate(-50%,-50%) scale(1.15)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
 .meter-hint{font-size:13px;color:#a25b72;margin-top:4px;opacity:0;transition:opacity .4s}
 .meter-hint.show{opacity:1;animation:hintPulse 2.5s ease infinite}
 @keyframes hintPulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -485,6 +501,9 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
           <path d="M -120 0 A 120 120 0 0 1 120 0" fill="none" stroke="#ef7e9e" stroke-width="26" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377" id="gaugeGlow" opacity=".35" filter="url(#arcGlow)" clip-path="url(#semiclip)"/>
           <!-- main fill -->
           <path d="M -120 0 A 120 120 0 0 1 120 0" fill="none" stroke="url(#gaugeGrad)" stroke-width="20" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377" id="gaugeFill"/>
+          <!-- infinity full circle (hidden until 100%) -->
+          <circle cx="0" cy="0" r="120" fill="none" stroke="url(#gaugeGrad)" stroke-width="6" stroke-dasharray="754" stroke-dashoffset="754" id="infinityArc" opacity="0" transform="rotate(-90)"/>
+          <circle cx="0" cy="0" r="128" fill="none" stroke="#ef7e9e" stroke-width="12" stroke-dasharray="804" stroke-dashoffset="804" id="infinityGlow" opacity="0" filter="url(#arcGlow)" transform="rotate(-90)"/>
           <!-- ticks -->
           <g id="tickGroup"></g>
           <!-- needle -->
@@ -496,6 +515,7 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
           </g>
         </svg>
         <div class="meter-sparkles" id="meterSparkles"></div>
+        <div class="infinity-text" id="infinityText">love has no limits ♡</div>
       </div>
       <div class="meter-hint" id="meterHint">← drag along the arc to fill it up →</div>
       <div class="feedback" id="fb"></div>
@@ -702,12 +722,10 @@ function setMeter(v){
     setTimeout(()=>heart.classList.remove('pulse'),400);
     if(!meterDone){
       meterDone=true;
-      fb.textContent='THAT\'S THE ANSWER 💗😭';
-      fb.style.color='#a9164a';
+      fb.textContent='';
       face.classList.add('pop');
-      playSuccess();
       haptic(30);
-      setTimeout(()=>go(3),1400);
+      setTimeout(startInfinitySequence,600);
     }
   }
 
@@ -719,6 +737,73 @@ function setMeter(v){
 
   /* sparkle along arc */
   if(v>prev&&v%3===0)spawnMSparkle(v);
+}
+
+/* ===========================
+   INFINITY SEQUENCE
+   =========================== */
+function startInfinitySequence(){
+  const container=document.getElementById('meterContainer');
+  const pctEl=document.getElementById('pct');
+  const faceEl=document.getElementById('face');
+  const fbEl=document.getElementById('fb');
+  const infText=document.getElementById('infinityText');
+  const infArc=document.getElementById('infinityArc');
+  const infGlow=document.getElementById('infinityGlow');
+
+  container.classList.add('infinity-mode');
+  playChime();
+  haptic(20);
+
+  /* count up past 100% */
+  let count=100;
+  const countUp=setInterval(()=>{
+    count+=2;
+    if(count<=300){
+      pctEl.textContent=count+'%';
+    }else{
+      clearInterval(countUp);
+      pctEl.textContent='∞';
+      pctEl.style.fontSize='clamp(36px,6vw,52px)';
+    }
+  },25);
+
+  /* face reactions */
+  setTimeout(()=>{faceEl.textContent='😳';fbEl.textContent='wait...';fbEl.style.color='#a9164a'},400);
+  setTimeout(()=>{faceEl.textContent='🤩';fbEl.textContent='it\'s going beyond!'},1000);
+  setTimeout(()=>{faceEl.textContent='🥹';fbEl.textContent='you broke the meter 😭'},1800);
+  setTimeout(()=>{
+    fbEl.textContent='love has no limits ♡';
+    fbEl.style.color='#a9164a';
+    fbEl.style.fontSize='clamp(14px,2.5vw,18px)';
+    fbEl.style.fontWeight='700';
+  },2600);
+
+  /* infinity arc fills (full circle) */
+  setTimeout(()=>{
+    infArc.style.opacity='.9';
+    infArc.style.transition='stroke-dashoffset 2.5s cubic-bezier(.22,1,.36,1)';
+    infArc.setAttribute('stroke-dashoffset','0');
+    infGlow.style.opacity='.5';
+    infGlow.style.transition='stroke-dashoffset 3s cubic-bezier(.22,1,.36,1)';
+    infGlow.setAttribute('stroke-dashoffset','0');
+  },300);
+
+  /* sparkles burst */
+  setTimeout(()=>{
+    for(let i=0;i<30;i++){
+      setTimeout(()=>spawnMSparkle(Math.random()*100),i*60);
+    }
+    spawnConfetti();
+    playSuccess();
+    haptic(40);
+  },1500);
+
+  /* show text */
+  setTimeout(()=>infText.classList.add('show'),2200);
+
+  /* transition */
+  setTimeout(()=>go(3),4000);
 }
 
 function spawnMSparkle(pct){
@@ -861,10 +946,76 @@ document.getElementById('flowers').addEventListener('click',function(){
 });
 
 /* ===========================
-   MUSIC
+   MUSIC — ACTUAL MELODY
    =========================== */
-let musicPlaying=false;
-function toggleMusic(){musicPlaying=!musicPlaying;haptic(10);const b=document.getElementById('playBtn'),eq=document.getElementById('eqBars');if(musicPlaying){b.textContent='❚❚';b.classList.add('playing');eq.style.display='flex';playChime()}else{b.textContent='▶';b.classList.remove('playing');eq.style.display='none'}}
+let musicPlaying=false,musicOscs=[],musicTimeout=null;
+
+const melody=[
+  // "Birds of a Feather" inspired dreamy melody
+  {n:523,d:.3},{n:587,d:.3},{n:659,d:.5},{n:587,d:.3},
+  {n:523,d:.3},{n:440,d:.5},{n:0,d:.2},
+  {n:659,d:.3},{n:698,d:.3},{n:784,d:.5},{n:698,d:.3},
+  {n:659,d:.3},{n:587,d:.5},{n:0,d:.2},
+  {n:784,d:.4},{n:880,d:.4},{n:784,d:.4},{n:659,d:.5},
+  {n:587,d:.3},{n:523,d:.3},{n:440,d:.5},{n:0,d:.2},
+  {n:523,d:.3},{n:659,d:.3},{n:784,d:.6},{n:0,d:.2},
+  {n:880,d:.4},{n:784,d:.4},{n:659,d:.4},{n:587,d:.5},{n:0,d:.3},
+  {n:523,d:.3},{n:587,d:.3},{n:659,d:.5},{n:587,d:.3},
+  {n:523,d:.3},{n:440,d:.5},{n:0,d:.3},
+  {n:784,d:.3},{n:659,d:.3},{n:587,d:.5},{n:523,d:.5},{n:0,d:.4}
+];
+
+let melodyIndex=0,melodyTimeout=null;
+
+function playMelodyNote(){
+  if(!musicPlaying)return;
+  if(melodyIndex>=melody.length)melodyIndex=0;
+  const note=melody[melodyIndex];
+  melodyIndex++;
+  if(note.n>0){
+    try{
+      const ctx=getAC();
+      // main tone
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.type='sine';
+      osc.frequency.value=note.n;
+      gain.gain.setValueAtTime(.06,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+note.d+.1);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start();osc.stop(ctx.currentTime+note.d+.1);
+      // soft harmony
+      const osc2=ctx.createOscillator();
+      const gain2=ctx.createGain();
+      osc2.type='triangle';
+      osc2.frequency.value=note.n*0.5;
+      gain2.gain.setValueAtTime(.025,ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+note.d+.15);
+      osc2.connect(gain2);gain2.connect(ctx.destination);
+      osc2.start();osc2.stop(ctx.currentTime+note.d+.15);
+    }catch(e){}
+  }
+  melodyTimeout=setTimeout(playMelodyNote,(note.d)*500);
+}
+
+function toggleMusic(){
+  musicPlaying=!musicPlaying;
+  haptic(10);
+  const btn=document.getElementById('playBtn');
+  const eq=document.getElementById('eqBars');
+  if(musicPlaying){
+    btn.textContent='❚❚';
+    btn.classList.add('playing');
+    eq.style.display='flex';
+    melodyIndex=0;
+    playMelodyNote();
+  }else{
+    btn.textContent='▶';
+    btn.classList.remove('playing');
+    eq.style.display='none';
+    clearTimeout(melodyTimeout);
+  }
+}
 
 /* ===========================
    FLYING GIFTS
