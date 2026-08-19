@@ -511,7 +511,7 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
     <div class="flying-gift path2" data-idx="1" onclick="catchGift(1)">🎁</div>
     <div class="flying-gift path3" data-idx="2" onclick="catchGift(2)">🎁</div>
     <div class="catch-msg" id="catchMsg"></div>
-    <button class="pill next" onclick="go(6)" style="position:absolute;right:20px;bottom:20px;z-index:5;display:none" id="giftsNext">Next →</button>
+    <button class="pill next" onclick="go(6)" style="position:absolute;right:20px;bottom:20px;z-index:5;display:none" id="giftsNext"></button>
     <div class="modal-overlay" id="modal"><div class="modal-box"><div class="big" id="modalEmoji">💗</div><h2 id="modalTitle"></h2><p id="modalText"></p><button class="pill" onclick="closeGift()">close ♡</button></div></div>
   </section>
 
@@ -806,11 +806,10 @@ function catchGift(i){
 
   if(caughtGifts.size===3){
     setTimeout(()=>{
-      document.getElementById('giftsNext').style.display='block';
-      document.getElementById('giftsNext').style.animation='fadeUp .6s cubic-bezier(.22,1,.36,1)';
       document.getElementById('catchMsg').textContent='you caught them all! 💕🎉';
       spawnConfetti();
     },800);
+    setTimeout(()=>go(6),2500);
   }
 }
 
