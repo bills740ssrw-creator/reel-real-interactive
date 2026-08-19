@@ -476,7 +476,7 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
     <div class="flower-stage" id="flowers" role="button" tabindex="0" aria-label="Tap bouquet">
       <div class="flowers-main">💐</div>
     </div>
-    <button class="pill next" onclick="go(4)" style="position:absolute;right:24px;bottom:20px;z-index:5">Next →</button>
+    </div>
   </section>
 
   <!-- ====== S4 — MEMORY ====== -->
@@ -742,6 +742,8 @@ document.getElementById('flowers').addEventListener('click',function(){
       setTimeout(()=>{n.style.opacity='1';n.style.transform='none'},i*200);
     });
   },400);
+
+  setTimeout(()=>go(4),2200);
 });
 
 /* ===========================
