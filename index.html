@@ -133,21 +133,25 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
 .quizbox h2{font-size:clamp(18px,3vw,24px);margin:4px 0 8px;text-align:center;transition:all .4s}
 
 /* Meter */
-.meter-wrap{position:relative;width:clamp(260px,48vw,360px);height:clamp(140px,22vw,185px);margin:8px 0 10px;cursor:grab}
-.meter-wrap:active{cursor:grabbing}
-.meter-arc{position:absolute;left:0;right:0;top:0;height:300px;border-radius:50%;background:conic-gradient(from 270deg,#f8c9d5 0%,#ef7e9e 25%,#d63678 50%,#a60d44 75%,#ef7e9e 90%,#f8c9d5 100%);transform:rotate(-45deg);box-shadow:0 0 30px #a60d4422}
-.meter-arc::after{content:'';position:absolute;left:22%;right:22%;top:22%;bottom:22%;background:#f9e8ed;border-radius:50%;box-shadow:inset 0 0 20px #00000008}
-.meter-glow{position:absolute;left:0;right:0;top:0;height:300px;border-radius:50%;transform:rotate(-45deg);opacity:0;transition:opacity .6s;pointer-events:none;background:conic-gradient(from 270deg,transparent 0%,#ef7e9e66 50%,transparent 100%)}
-.meter-glow.active{opacity:1;animation:glowPulse 2s ease infinite}
-@keyframes glowPulse{0%,100%{opacity:.6}50%{opacity:1}}
+.meter-container{position:relative;width:clamp(260px,50vw,380px);height:clamp(140px,24vw,200px);margin:4px 0 6px;cursor:grab}
+.meter-container:active{cursor:grabbing}
+.meter-svg{width:100%;height:100%;overflow:visible}
+.meter-glow-bg{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:200px;height:100px;border-radius:50%;background:radial-gradient(ellipse,#ef7e9e22,transparent 70%);opacity:0;transition:opacity .6s;pointer-events:none}
+.meter-glow-bg.active{opacity:1;animation:glowBgPulse 2s ease infinite}
+@keyframes glowBgPulse{0%,100%{opacity:.6;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
+.meter-sparkles{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.m-sparkle{position:absolute;width:5px;height:5px;border-radius:50%;pointer-events:none;animation:mSparkle .8s ease-out forwards}
+@keyframes mSparkle{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0) translateY(-20px)}}
+#tickGroup line{stroke:#c47890;stroke-width:1.5;stroke-linecap:round}
+#tickGroup text{fill:#a25b72;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:600}
+#needleHeart{transition:font-size .3s}
+#needleHeart.pulse{animation:heartPulse .4s ease}
+@keyframes heartPulse{0%{font-size:20px}50%{font-size:28px}100%{font-size:20px}}
+#needleLine{transition:all .12s cubic-bezier(.22,1,.36,1)}
 
-.needle-wrap{position:absolute;left:50%;bottom:14px;width:0;height:0;z-index:3;transition:transform .15s cubic-bezier(.22,1,.36,1)}
-.needle{position:absolute;left:-2px;bottom:0;width:4px;height:120px;background:linear-gradient(to top,#681433,#a9164a);border-radius:2px;transform-origin:bottom center;box-shadow:0 0 8px #68143344}
-.needle::after{content:'♡';position:absolute;top:-16px;left:-12px;font-size:28px;filter:drop-shadow(0 2px 4px #00000022)}
-.needle-dot{position:absolute;left:-4px;bottom:-4px;width:12px;height:12px;background:#681433;border-radius:50%;box-shadow:0 0 10px #68143344}
-.meter-labels{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;padding:0 8px;font-size:11px;color:#a25b72;font-weight:600}
-.meter-hint{font-size:13px;color:#a25b72;margin-top:6px;opacity:0;transition:opacity .4s}
-.meter-hint.show{opacity:1}
+.meter-hint{font-size:13px;color:#a25b72;margin-top:4px;opacity:0;transition:opacity .4s}
+.meter-hint.show{opacity:1;animation:hintPulse 2.5s ease infinite}
+@keyframes hintPulse{0%,100%{opacity:1}50%{opacity:.35}}
 
 .pct{font-size:clamp(28px,4vw,40px);font-weight:700;margin-bottom:4px;font-variant-numeric:tabular-nums;transition:all .3s}
 .pct.pop{animation:numPop .4s ease}
@@ -454,16 +458,46 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
       <div class="face" id="face">🥺</div>
       <h2 id="qtitle">How much do you love me?</h2>
       <div class="pct" id="pct">0%</div>
-      <div class="meter-wrap" id="meterWrap">
-        <div class="meter-arc"></div>
-        <div class="meter-glow" id="meterGlow"></div>
-        <div class="needle-wrap" id="needleWrap">
-          <div class="needle" id="needle"></div>
-          <div class="needle-dot"></div>
-        </div>
-        <div class="meter-labels"><span>0%</span><span>50%</span><span>100%</span></div>
+      <div class="meter-container" id="meterContainer">
+        <div class="meter-glow-bg" id="meterGlowBg"></div>
+        <svg viewBox="-150 -140 300 170" id="meterSvg" class="meter-svg">
+          <defs>
+            <linearGradient id="gaugeGrad" gradientUnits="userSpaceOnUse" x1="-120" y1="0" x2="120" y2="0">
+              <stop offset="0%" stop-color="#f8c9d5"/>
+              <stop offset="25%" stop-color="#ef7e9e"/>
+              <stop offset="55%" stop-color="#d63678"/>
+              <stop offset="85%" stop-color="#a60d44"/>
+              <stop offset="100%" stop-color="#7a0a33"/>
+            </linearGradient>
+            <filter id="needleGlow">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="arcGlow">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id="semiclip"><rect x="-150" y="-140" width="300" height="140"/></clipPath>
+          </defs>
+          <!-- track -->
+          <path d="M -120 0 A 120 120 0 0 1 120 0" fill="none" stroke="#f0d0da" stroke-width="20" stroke-linecap="round"/>
+          <!-- glow fill (behind) -->
+          <path d="M -120 0 A 120 120 0 0 1 120 0" fill="none" stroke="#ef7e9e" stroke-width="26" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377" id="gaugeGlow" opacity=".35" filter="url(#arcGlow)" clip-path="url(#semiclip)"/>
+          <!-- main fill -->
+          <path d="M -120 0 A 120 120 0 0 1 120 0" fill="none" stroke="url(#gaugeGrad)" stroke-width="20" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377" id="gaugeFill"/>
+          <!-- ticks -->
+          <g id="tickGroup"></g>
+          <!-- needle -->
+          <g id="needleGroup" filter="url(#needleGlow)">
+            <line x1="0" y1="8" x2="0" y2="-105" stroke="#681433" stroke-width="3" stroke-linecap="round" id="needleLine"/>
+            <circle cx="0" cy="0" r="8" fill="#681433"/>
+            <circle cx="0" cy="0" r="4" fill="#a9164a"/>
+            <text x="0" y="-112" text-anchor="middle" font-size="20" id="needleHeart">♡</text>
+          </g>
+        </svg>
+        <div class="meter-sparkles" id="meterSparkles"></div>
       </div>
-      <div class="meter-hint" id="meterHint">← drag the meter to fill it up →</div>
+      <div class="meter-hint" id="meterHint">← drag along the arc to fill it up →</div>
       <div class="feedback" id="fb"></div>
     </div>
   </section>
@@ -588,33 +622,84 @@ let chatDone=false;
 function animChat(){if(chatDone)return;chatDone=true;const ms=document.querySelectorAll('#s1 .msg'),tg=document.getElementById('chatTyping');ms.forEach((m,i)=>setTimeout(()=>{m.classList.add('show');playTone(440+i*60,.06,'sine',.02)},parseInt(m.dataset.delay)||600*(i+1)));setTimeout(()=>tg.classList.add('show'),ms.length*600+400);setTimeout(()=>tg.classList.remove('show'),ms.length*600+1600)}
 
 /* ===========================
-   INTERACTIVE LOVE METER
+   INTERACTIVE LOVE METER (SVG)
    =========================== */
 let meterVal=0,meterActive=false,meterDone=false,meterEntryDone=false;
-function animMeterEntry(){if(meterEntryDone)return;meterEntryDone=true;setTimeout(()=>document.getElementById('meterHint').classList.add('show'),600)}
+const ARC_LEN=Math.PI*120; // ~377
+
+function animMeterEntry(){
+  if(meterEntryDone)return;
+  meterEntryDone=true;
+  setTimeout(()=>document.getElementById('meterHint').classList.add('show'),600);
+  buildTicks();
+}
+
+function buildTicks(){
+  const g=document.getElementById('tickGroup');
+  for(let p=0;p<=100;p+=5){
+    const major=p%25===0;
+    const ang=(-90+p*1.8)*Math.PI/180;
+    const r1=major?102:106;
+    const r2=115;
+    const x1=Math.sin(ang)*r1, y1=-Math.cos(ang)*r1;
+    const x2=Math.sin(ang)*r2, y2=-Math.cos(ang)*r2;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('stroke',major?'#a9164a':'#c47890');
+    line.setAttribute('stroke-width',major?'2':'1');
+    g.appendChild(line);
+    if(major){
+      const tx=Math.sin(ang)*132, ty=-Math.cos(ang)*132;
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',tx);t.setAttribute('y',ty+3);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('fill','#a25b72');
+      t.setAttribute('font-size','11');
+      t.setAttribute('font-family','DM Sans,sans-serif');
+      t.setAttribute('font-weight','600');
+      t.textContent=p+'%';
+      g.appendChild(t);
+    }
+  }
+}
 
 function setMeter(v){
   v=Math.max(0,Math.min(100,Math.round(v)));
+  const prev=meterVal;
   meterVal=v;
-  const wrap=document.getElementById('needleWrap');
-  wrap.style.transform=`rotate(${-58+v*1.16}deg)`;
+
+  /* gauge fill */
+  const offset=ARC_LEN*(1-v/100);
+  document.getElementById('gaugeFill').setAttribute('stroke-dashoffset',offset);
+  document.getElementById('gaugeGlow').setAttribute('stroke-dashoffset',offset);
+
+  /* needle rotation */
+  const ang=-90+v*1.8;
+  document.getElementById('needleGroup').setAttribute('transform',`rotate(${ang})`);
+
+  /* percentage */
   document.getElementById('pct').textContent=v+'%';
   document.getElementById('pct').classList.add('pop');
   setTimeout(()=>document.getElementById('pct').classList.remove('pop'),300);
 
+  /* face + feedback */
   const face=document.getElementById('face');
   const fb=document.getElementById('fb');
-  const glow=document.getElementById('meterGlow');
+  const glowBg=document.getElementById('meterGlowBg');
   const hint=document.getElementById('meterHint');
+  const heart=document.getElementById('needleHeart');
 
-  if(v<20){face.textContent='🥺';fb.textContent='';glow.classList.remove('active')}
+  if(v<20){face.textContent='🥺';fb.textContent='';glowBg.classList.remove('active')}
   else if(v<50){face.textContent='😊';fb.textContent='keep going...';fb.style.color='#c47890'}
-  else if(v<80){face.textContent='☺️';fb.textContent='almost there!';fb.style.color='#a25b72'}
+  else if(v<75){face.textContent='☺️';fb.textContent='almost there!';fb.style.color='#a25b72'}
   else if(v<100){face.textContent='😍';fb.textContent='so close!';fb.style.color='#a9164a'}
   else{
     face.textContent='🥰';
-    glow.classList.add('active');
+    glowBg.classList.add('active');
     hint.classList.remove('show');
+    heart.classList.add('pulse');
+    setTimeout(()=>heart.classList.remove('pulse'),400);
     if(!meterDone){
       meterDone=true;
       fb.textContent='THAT\'S THE ANSWER 💗😭';
@@ -625,27 +710,56 @@ function setMeter(v){
       setTimeout(()=>go(3),1400);
     }
   }
+
+  /* milestone haptics */
+  if(v>=25&&prev<25)haptic(10);
+  if(v>=50&&prev<50)haptic(15);
+  if(v>=75&&prev<75)haptic(15);
+  if(v>=100&&prev<100)haptic(30);
+
+  /* sparkle along arc */
+  if(v>prev&&v%3===0)spawnMSparkle(v);
 }
 
-function getMeterAngle(clientX,clientY){
-  const wrap=document.getElementById('meterWrap');
-  const rect=wrap.getBoundingClientRect();
+function spawnMSparkle(pct){
+  const ang=(-90+pct*1.8)*Math.PI/180;
+  const r=120;
+  const container=document.getElementById('meterContainer');
+  const svg=document.getElementById('meterSvg');
+  const svgRect=svg.getBoundingClientRect();
+  const contRect=container.getBoundingClientRect();
+  const cx=svgRect.left+svgRect.width/2-contRect.left;
+  const cy=svgRect.top+svgRect.height-contRect.top-10;
+  const sx=cx+Math.sin(ang)*r;
+  const sy=cy-Math.cos(ang)*r;
+  const s=document.createElement('div');
+  s.className='m-sparkle';
+  s.style.left=sx+'px';
+  s.style.top=sy+'px';
+  s.style.background=['#a9164a','#ef7e9e','#ffd700','#fff'][Math.floor(Math.random()*4)];
+  container.querySelector('.meter-sparkles').appendChild(s);
+  setTimeout(()=>s.remove(),800);
+}
+
+function getMeterPct(clientX,clientY){
+  const svg=document.getElementById('meterSvg');
+  const rect=svg.getBoundingClientRect();
   const cx=rect.left+rect.width/2;
-  const cy=rect.top+rect.height-14;
+  const cy=rect.top+rect.height-10;
   const dx=clientX-cx;
   const dy=cy-clientY;
   let angle=Math.atan2(dx,dy)*180/Math.PI;
-  angle=Math.max(-58,Math.min(58,angle));
-  return Math.max(0,Math.min(100,(angle+58)/116*100));
+  angle=Math.max(-90,Math.min(90,angle));
+  return(angle+90)/180*100;
 }
 
-const meterWrap=document.getElementById('meterWrap');
-meterWrap.addEventListener('mousedown',e=>{if(meterDone)return;meterActive=true;setMeter(getMeterAngle(e.clientX,e.clientY));document.getElementById('meterHint').classList.remove('show')});
-document.addEventListener('mousemove',e=>{if(!meterActive||meterDone)return;setMeter(getMeterAngle(e.clientX,e.clientY))});
+const meterContainer=document.getElementById('meterContainer');
+meterContainer.addEventListener('mousedown',e=>{if(meterDone)return;meterActive=true;setMeter(getMeterPct(e.clientX,e.clientY));document.getElementById('meterHint').classList.remove('show')});
+document.addEventListener('mousemove',e=>{if(!meterActive||meterDone)return;setMeter(getMeterPct(e.clientX,e.clientY))});
 document.addEventListener('mouseup',()=>{meterActive=false});
 
-meterWrap.addEventListener('touchstart',e=>{if(meterDone)return;meterActive=true;const t=e.touches[0];setMeter(getMeterAngle(t.clientX,t.clientY));document.getElementById('meterHint').classList.remove('show')},{passive:true});
-document.addEventListener('touchmove',e=>{if(!meterActive||meterDone)return;const t=e.touches[0];setMeter(getMeterAngle(t.clientX,t.clientY))},{passive:true});
+meterContainer.addEventListener('touchstart',e=>{if(meterDone)return;meterActive=true;const t=e.touches[0];setMeter(getMeterPct(t.clientX,t.clientY));document.getElementById('meterHint').classList.remove('show')},{passive:true});
+document.addEventListener('touchmove',e=>{if(!meterActive||meterDone)return;const t=e.touches[0];setMeter(getMeterPct(t.clientX,t.clientY))},{passive:true});
 document.addEventListener('touchend',()=>{meterActive=false});
 
 /* ===========================
