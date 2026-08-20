@@ -685,7 +685,7 @@ function buildTicks(){
 }
 
 function setMeter(v){
-  v=Math.max(0,Math.min(100,Math.round(v)));
+  v=Math.max(0,Math.round(v));
   const prev=meterVal;
   meterVal=v;
 
@@ -763,8 +763,9 @@ function startInfinitySequence(){
       pctEl.textContent=count+'%';
     }else{
       clearInterval(countUp);
-      pctEl.textContent='∞';
-      pctEl.style.fontSize='clamp(36px,6vw,52px)';
+      pctEl.textContent='♾️';
+      pctEl.style.fontSize='clamp(48px,8vw,72px)';
+      pctEl.style.textShadow='0 0 30px #a9164a55';
     }
   },25);
 
