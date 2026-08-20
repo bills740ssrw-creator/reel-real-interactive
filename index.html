@@ -187,12 +187,12 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
 
 /* Neo‑brutalist photo cards */
 .burst-photo{
-  position:absolute;z-index:11;pointer-events:none;opacity:0;
+  position:absolute;z-index:11;pointer-events:none;opacity:0;cursor:pointer;
   width:clamp(100px,18vw,160px);height:clamp(120px,22vw,200px);
   border:4px solid #1a1a1a;border-radius:6px;overflow:hidden;
   box-shadow:6px 6px 0 #1a1a1a;
   background:#f5f5f5;
-  transition:opacity .3s;
+  transition:transform .2s,box-shadow .2s;
 }
 .burst-photo img{width:100%;height:75%;object-fit:cover;display:block;border-bottom:3px solid #1a1a1a}
 .burst-photo .caption{
@@ -202,16 +202,48 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
 .burst-photo.animate{
   animation:photoBurst 1.6s cubic-bezier(.22,1,.36,1) forwards;
 }
+.burst-photo.done{pointer-events:auto}
+.burst-photo:hover{transform:scale(1.08)!important;z-index:12;box-shadow:8px 8px 0 #1a1a1a}
 @keyframes photoBurst{
   0%{opacity:0;transform:translate(0,0) scale(0) rotate(0)}
-  30%{opacity:1;transform:translate(calc(var(--bx)*.6),calc(var(--by)*.6)) scale(1.1) rotate(var(--br))}
-  50%{opacity:1;transform:translate(var(--bx),var(--by)) scale(1) rotate(var(--br))}
+  20%{opacity:1;transform:translate(calc(var(--bx)*.2),calc(var(--by)*.2)) scale(.5) rotate(calc(var(--br)*.2))}
+  50%{opacity:1;transform:translate(calc(var(--bx)*.7),calc(var(--by)*.7)) scale(1.05) rotate(calc(var(--br)*.8))}
+  70%{opacity:1;transform:translate(calc(var(--bx)*1.05),calc(var(--by)*1.05)) scale(.98) rotate(var(--br))}
   100%{opacity:1;transform:translate(var(--bx),var(--by)) scale(1) rotate(var(--br))}
 }
 .burst-photo:nth-child(odd){border-color:#ff4500;box-shadow:6px 6px 0 #ff4500}
 .burst-photo:nth-child(3n){border-color:#0057ff;box-shadow:6px 6px 0 #0057ff}
 .burst-photo:nth-child(4n){border-color:#00c853;box-shadow:6px 6px 0 #00c853}
 .burst-photo:nth-child(5n){border-color:#ff00ff;box-shadow:6px 6px 0 #ff00ff}
+
+/* Photo lightbox */
+.photo-lightbox{
+  position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);
+  display:none;place-items:center;backdrop-filter:blur(8px);
+}
+.photo-lightbox.show{display:grid;animation:lbIn .3s ease}
+@keyframes lbIn{0%{opacity:0}100%{opacity:1}}
+.photo-lightbox-inner{
+  position:relative;max-width:85vw;max-height:80vh;
+  border:5px solid #1a1a1a;border-radius:8px;overflow:hidden;
+  box-shadow:10px 10px 0 #1a1a1a;background:#fff;
+  animation:lbPop .35s cubic-bezier(.22,1,.36,1);
+}
+@keyframes lbPop{0%{transform:scale(.7) rotate(-3deg)}100%{transform:scale(1) rotate(0)}}
+.photo-lightbox-inner img{width:100%;max-height:70vh;object-fit:contain;display:block}
+.photo-lightbox-inner .lb-cap{
+  font:700 13px/1 'DM Sans',sans-serif;color:#1a1a1a;
+  padding:10px 14px;text-transform:uppercase;letter-spacing:1px;
+  border-top:3px solid #1a1a1a;text-align:center;
+}
+.photo-lightbox-close{
+  position:absolute;top:12px;right:12px;width:36px;height:36px;
+  border-radius:50%;border:3px solid #1a1a1a;background:#ff4500;color:#fff;
+  font-size:18px;font-weight:700;cursor:pointer;
+  display:grid;place-items:center;z-index:2;
+  box-shadow:3px 3px 0 #1a1a1a;transition:transform .15s;
+}
+.photo-lightbox-close:hover{transform:scale(1.1) rotate(90deg)}
 
 .bouquet .next{position:absolute;right:24px;bottom:20px;z-index:5}
 
@@ -922,32 +954,37 @@ document.getElementById('flowers').addEventListener('click',function(){
     setTimeout(()=>p.classList.add('animate'),i*30);
   }
 
-  /* ── neo‑brutalist photo burst ── */
+  /* ── neo‑brutalist photo burst (spiral) ── */
   const photos=[
-    {src:'https://picsum.photos/seed/love1/200/260',cap:'us ♡'},
-    {src:'https://picsum.photos/seed/love2/200/260',cap:'always'},
-    {src:'https://picsum.photos/seed/love3/200/260',cap:'forever'},
-    {src:'https://picsum.photos/seed/love4/200/260',cap:'together'},
-    {src:'https://picsum.photos/seed/love5/200/260',cap:'my heart'},
-    {src:'https://picsum.photos/seed/love6/200/260',cap:'yours'},
-    {src:'https://picsum.photos/seed/love7/200/260',cap:'you & me'},
-    {src:'https://picsum.photos/seed/love8/200/260',cap:'love'},
+    {src:'https://picsum.photos/seed/love1/400/520',cap:'us ♡'},
+    {src:'https://picsum.photos/seed/love2/400/520',cap:'always'},
+    {src:'https://picsum.photos/seed/love3/400/520',cap:'forever'},
+    {src:'https://picsum.photos/seed/love4/400/520',cap:'together'},
+    {src:'https://picsum.photos/seed/love5/400/520',cap:'my heart'},
+    {src:'https://picsum.photos/seed/love6/400/520',cap:'yours'},
+    {src:'https://picsum.photos/seed/love7/400/520',cap:'you & me'},
+    {src:'https://picsum.photos/seed/love8/400/520',cap:'love'},
   ];
-  const photoAngles=[-60,-35,-10,15,40,65,-20,25];
+  const GOLDEN_ANGLE=137.508;
   for(let i=0;i<photos.length;i++){
     const card=document.createElement('div');
     card.className='burst-photo';
     card.innerHTML=`<img src="${photos[i].src}" alt="${photos[i].cap}" loading="lazy"><div class="caption">${photos[i].cap}</div>`;
     card.style.left=cx+'px';
     card.style.top=cy+'px';
-    const angle=(photoAngles[i]||0)*Math.PI/180;
-    const dist=60+Math.random()*40;
-    card.style.setProperty('--bx',Math.cos(angle)*dist+'px');
-    card.style.setProperty('--by',Math.sin(angle)*dist+'px');
-    card.style.setProperty('--br',(photoAngles[i]||0)+'deg');
-    card.style.animationDelay=(200+i*80)+'ms';
+    const ang=(i*GOLDEN_ANGLE)*Math.PI/180;
+    const dist=50+i*18;
+    card.style.setProperty('--bx',Math.cos(ang)*dist+'px');
+    card.style.setProperty('--by',Math.sin(ang)*dist+'px');
+    card.style.setProperty('--br',(i*GOLDEN_ANGLE%360-180)*.3+'deg');
+    card.style.animationDelay=(200+i*100)+'ms';
+    card.addEventListener('click',function(e){
+      e.stopPropagation();
+      openPhotoLightbox(photos[i].src,photos[i].cap);
+    });
     stage.appendChild(card);
-    setTimeout(()=>card.classList.add('animate'),200+i*80);
+    setTimeout(()=>card.classList.add('animate'),200+i*100);
+    setTimeout(()=>card.classList.add('done'),200+i*100+1600);
   }
 
   setTimeout(()=>{
@@ -1041,6 +1078,34 @@ const giftData=[
   ['🫂','surprise #2','one giant hug, redeemable whenever you need it.'],
   ['💗','surprise #3','unlimited love. no expiry. ever.']
 ];
+
+/* ===========================
+   PHOTO LIGHTBOX
+   =========================== */
+function openPhotoLightbox(src,cap){
+  haptic(15);playPop();
+  let lb=document.getElementById('photoLightbox');
+  if(!lb){
+    lb=document.createElement('div');
+    lb.id='photoLightbox';
+    lb.className='photo-lightbox';
+    lb.innerHTML=`<div class="photo-lightbox-inner">
+      <button class="photo-lightbox-close" onclick="closePhotoLightbox()">✕</button>
+      <img id="lbImg" src="" alt="">
+      <div class="lb-cap" id="lbCap"></div>
+    </div>`;
+    lb.addEventListener('click',function(e){if(e.target===lb)closePhotoLightbox()});
+    document.body.appendChild(lb);
+  }
+  document.getElementById('lbImg').src=src;
+  document.getElementById('lbCap').textContent=cap;
+  lb.classList.add('show');
+}
+function closePhotoLightbox(){
+  haptic(10);playClick();
+  const lb=document.getElementById('photoLightbox');
+  if(lb)lb.classList.remove('show');
+}
 
 function catchGift(i){
   if(caughtGifts.has(i))return;
