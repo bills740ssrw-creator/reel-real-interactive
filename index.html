@@ -209,6 +209,34 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
   100%{opacity:0;transform:translate(var(--px),calc(var(--py) + 60px)) rotate(720deg)}
 }
 
+/* Neo‑brutalist photo cards */
+.burst-photo{
+  position:absolute;z-index:11;pointer-events:none;opacity:0;
+  width:clamp(70px,12vw,110px);height:clamp(90px,15vw,140px);
+  border:4px solid #1a1a1a;border-radius:6px;overflow:hidden;
+  box-shadow:6px 6px 0 #1a1a1a;
+  background:#f5f5f5;
+  transition:opacity .3s;
+}
+.burst-photo img{width:100%;height:75%;object-fit:cover;display:block;border-bottom:3px solid #1a1a1a}
+.burst-photo .caption{
+  font:700 9px/1.2 'DM Sans',sans-serif;color:#1a1a1a;
+  padding:4px 5px;text-transform:uppercase;letter-spacing:.5px;
+}
+.burst-photo.animate{
+  animation:photoBurst 1.6s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes photoBurst{
+  0%{opacity:0;transform:translate(0,0) scale(0) rotate(0)}
+  30%{opacity:1;transform:translate(calc(var(--bx)*.6),calc(var(--by)*.6)) scale(1.1) rotate(var(--br))}
+  50%{opacity:1;transform:translate(var(--bx),var(--by)) scale(1) rotate(var(--br))}
+  100%{opacity:1;transform:translate(var(--bx),var(--by)) scale(1) rotate(var(--br))}
+}
+.burst-photo:nth-child(odd){border-color:#ff4500;box-shadow:6px 6px 0 #ff4500}
+.burst-photo:nth-child(3n){border-color:#0057ff;box-shadow:6px 6px 0 #0057ff}
+.burst-photo:nth-child(4n){border-color:#00c853;box-shadow:6px 6px 0 #00c853}
+.burst-photo:nth-child(5n){border-color:#ff00ff;box-shadow:6px 6px 0 #ff00ff}
+
 .bouquet .next{position:absolute;right:24px;bottom:20px;z-index:5}
 
 /* ===============================================================
@@ -940,13 +968,41 @@ document.getElementById('flowers').addEventListener('click',function(){
     setTimeout(()=>p.classList.add('animate'),i*30);
   }
 
+  /* ── neo‑brutalist photo burst ── */
+  const photos=[
+    {src:'https://picsum.photos/seed/love1/200/260',cap:'us ♡'},
+    {src:'https://picsum.photos/seed/love2/200/260',cap:'always'},
+    {src:'https://picsum.photos/seed/love3/200/260',cap:'forever'},
+    {src:'https://picsum.photos/seed/love4/200/260',cap:'together'},
+    {src:'https://picsum.photos/seed/love5/200/260',cap:'my heart'},
+    {src:'https://picsum.photos/seed/love6/200/260',cap:'yours'},
+    {src:'https://picsum.photos/seed/love7/200/260',cap:'you & me'},
+    {src:'https://picsum.photos/seed/love8/200/260',cap:'love'},
+  ];
+  const photoAngles=[-25,-15,-5,5,15,25,-10,10];
+  for(let i=0;i<photos.length;i++){
+    const card=document.createElement('div');
+    card.className='burst-photo';
+    card.innerHTML=`<img src="${photos[i].src}" alt="${photos[i].cap}" loading="lazy"><div class="caption">${photos[i].cap}</div>`;
+    card.style.left=cx+'px';
+    card.style.top=cy+'px';
+    const angle=(Math.PI*2/8)*i+(Math.random()*.3-.15);
+    const dist=110+Math.random()*80;
+    card.style.setProperty('--bx',Math.cos(angle)*dist+'px');
+    card.style.setProperty('--by',Math.sin(angle)*dist+'px');
+    card.style.setProperty('--br',(photoAngles[i]||0)+'deg');
+    card.style.animationDelay=(200+i*80)+'ms';
+    stage.appendChild(card);
+    setTimeout(()=>card.classList.add('animate'),200+i*80);
+  }
+
   setTimeout(()=>{
     document.querySelectorAll('#s3 .note,.bouquet .sub').forEach((n,i)=>{
       setTimeout(()=>{n.style.opacity='1';n.style.transform='none'},i*200);
     });
   },400);
 
-  setTimeout(()=>go(4),2200);
+  setTimeout(()=>go(4),4500);
 });
 
 /* ===========================
