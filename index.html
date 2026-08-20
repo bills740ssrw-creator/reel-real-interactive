@@ -205,11 +205,11 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
 .burst-photo.done{pointer-events:auto}
 .burst-photo:hover{transform:scale(1.08)!important;z-index:12;box-shadow:8px 8px 0 #1a1a1a}
 @keyframes photoBurst{
-  0%{opacity:0;transform:translate(0,0) scale(0) rotate(0)}
-  20%{opacity:1;transform:translate(calc(var(--bx)*.2),calc(var(--by)*.2)) scale(.5) rotate(calc(var(--br)*.2))}
-  50%{opacity:1;transform:translate(calc(var(--bx)*.7),calc(var(--by)*.7)) scale(1.05) rotate(calc(var(--br)*.8))}
-  70%{opacity:1;transform:translate(calc(var(--bx)*1.05),calc(var(--by)*1.05)) scale(.98) rotate(var(--br))}
-  100%{opacity:1;transform:translate(var(--bx),var(--by)) scale(1) rotate(var(--br))}
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(0)}
+  20%{opacity:1;transform:translate(calc(var(--bx)*.2 - 50%),calc(var(--by)*.2 - 50%)) scale(.5) rotate(calc(var(--br)*.2))}
+  50%{opacity:1;transform:translate(calc(var(--bx)*.7 - 50%),calc(var(--by)*.7 - 50%)) scale(1.05) rotate(calc(var(--br)*.8))}
+  70%{opacity:1;transform:translate(calc(var(--bx)*1.05 - 50%),calc(var(--by)*1.05 - 50%)) scale(.98) rotate(var(--br))}
+  100%{opacity:1;transform:translate(calc(var(--bx) - 50%),calc(var(--by) - 50%)) scale(1) rotate(var(--br))}
 }
 .burst-photo:nth-child(odd){border-color:#ff4500;box-shadow:6px 6px 0 #ff4500}
 .burst-photo:nth-child(3n){border-color:#0057ff;box-shadow:6px 6px 0 #0057ff}
