@@ -547,8 +547,11 @@ button:focus-visible{outline:2px solid #a9164a;outline-offset:3px}
         <div class="butterfly bf1">🦋</div><div class="butterfly bf2">🦋</div>
         <div class="music-player">
           <button class="play-btn" id="playBtn" onclick="toggleMusic()" aria-label="Play music">▶</button>
-          <div class="eq-bars" id="eqBars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
-          <div><b style="font-size:12px">BIRDS OF A FEATHER</b><br><small style="color:#888">Billie Eilish</small></div>
+<div class="eq-bars" id="eqBars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+
+           <audio id="bgMusic" preload="metadata" style="display:none"><source src="careless-whisper.mp3" type="audio/mpeg"></audio>
+
+           <div><b style="font-size:12px">Careless Whisper</b><br><small style="color:#888">George Michael</small></div>
         </div>
       </div>
     </div>
@@ -1000,21 +1003,13 @@ function playMelodyNote(){
 }
 
 function toggleMusic(){
-  musicPlaying=!musicPlaying;
-  haptic(10);
-  const btn=document.getElementById('playBtn');
-  const eq=document.getElementById('eqBars');
-  if(musicPlaying){
-    btn.textContent='❚❚';
-    btn.classList.add('playing');
-    eq.style.display='flex';
-    melodyIndex=0;
-    playMelodyNote();
-  }else{
-    btn.textContent='▶';
-    btn.classList.remove('playing');
-    eq.style.display='none';
-    clearTimeout(melodyTimeout);
+  const audio = document.getElementById('bgMusic');
+  if (!audio.paused) {
+    audio.pause();
+    document.getElementById('playBtn').textContent = '▶';
+  } else {
+    audio.play().catch(err => console.error('Autoplay blocked:', err));
+    document.getElementById('playBtn').textContent = '❚❚';
   }
 }
 
